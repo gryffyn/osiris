@@ -16,7 +16,7 @@ go build
 ```
 
 ## usage
-```shell
+```
 Usage:
   osiris [OPTIONS] [regex] [filename]
 
