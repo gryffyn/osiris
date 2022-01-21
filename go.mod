@@ -1,4 +1,4 @@
-module osiris
+module git.neveris.one/gryffyn/osiris
 
 go 1.17
 
