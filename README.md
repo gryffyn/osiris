@@ -1,7 +1,7 @@
 # osiris
 
 [![Build Status](https://ci.neveris.one/api/badges/gryffyn/osiris/status.svg?ref=refs/heads/main)](https://ci.neveris.one/gryffyn/osiris)  
-a tool for renaming films / tv series based on named capture groups
+A tool for renaming films / tv series based on named regex capture groups.
 
 ## installation
 
