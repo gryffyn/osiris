@@ -1,16 +1,16 @@
 # osiris
 
-[![Build Status](https://ci.neveris.one/api/badges/gryffyn/osiris/status.svg?ref=refs/heads/main)](https://ci.neveris.one/gryffyn/osiris)  
+[![Build Status](https://ci.gryffyn.io/api/badges/gryffyn/osiris/status.svg?ref=refs/heads/main)](https://ci.gryffyn.io/gryffyn/osiris)  
 A tool for renaming films / tv series based on named regex capture groups.
 
 ## installation
 
-`go install git.neveris.one/gryffyn/osiris@latest`
+`go install git.gryffyn.io/gryffyn/osiris@latest`
 
 *or*
 
 ```shell
-git clone https://git.neveris.one/gryffyn/osiris
+git clone https://git.gryffyn.io/gryffyn/osiris
 cd osiris
 go build
 ```
