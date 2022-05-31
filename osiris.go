@@ -31,8 +31,8 @@ type args struct {
 	Silent     bool   `short:"s" long:"silent" description:"don't print file names"`
 	NoColor    bool   `long:"no-color" description:"disables colored output"`
 	Film       bool   `short:"f" long:"film" description:"uses film output format"`
-	Year       string `long:"year" description:"release year override"`
-	Title      string `long:"title" description:"release title override"`
+	Year       string `short:"y" long:"year" description:"release year override"`
+	Title      string `short:"t" long:"title" description:"release title override"`
 	Positional struct {
 		Regex    string   `positional-arg-name:"regex" required:"true"`
 		Filename []string `positional-arg-name:"filename" required:"true"`

@@ -18,15 +18,15 @@ go build
 ## usage
 ```
 Usage:
-  osiris [OPTIONS] [regex] [filename]
+  osiris [OPTIONS] [regex] [filename...]
 
 Application Options:
   -d, --dryrun    don't modify files
   -s, --silent    don't print file names
       --no-color  disables colored output
   -f, --film      uses film output format
-      --year=     release year override
-      --title=    release title override
+  -y, --year=     release year override
+  -t, --title=    release title override
 
 Help Options:
   -h, --help      Show this help message
@@ -48,7 +48,7 @@ the regex argument takes in a regex with specifically-named named capture groups
 
 odin follows a standard-ish format, namely
 
-`Series Title (YEAR) - S01E01 - Episode Title (SCENE INFO).ext`
+`Series Title - S01E01 - Episode Title (SCENE INFO).ext`
 
 or in the case of a film (`-f, --film`)
 
@@ -57,6 +57,6 @@ or in the case of a film (`-f, --film`)
 ## example
 
 ```shell
-$ osiris -d --year=1997 '(?P<title>\w+)\.(?P<ep>S\d{2}E\d{2})\.(?P<eptitle>[\w\.]+)\.(?P<scene>WEB-.+)' Title.S01E01.Episode.Title.WEB-DL.H264.SCENE.mkv
-Title.S01E01.Episode.Title.WEB-DL.H264.SCENE.mkv -> ./Title (1997) - S01E01 - Episode Title (WEB-DL H264 SCENE).mkv
+$ osiris -d '(?P<title>\w+)\.(?P<ep>S\d{2}E\d{2})\.(?P<eptitle>[\w\.]+)\.(?P<scene>WEB-.+)' Title.S01E01.Episode.Title.WEB-DL.H264.SCENE.mkv
+Title.S01E01.Episode.Title.WEB-DL.H264.SCENE.mkv -> ./Title - S01E01 - Episode Title (WEB-DL H264 SCENE).mkv
 ```
