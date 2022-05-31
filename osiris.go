@@ -12,12 +12,18 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-type Release struct {
+type release struct {
 	Title        string
 	Year         string
 	Episode      string
 	EpisodeTitle string
 	Scene        string
+}
+
+type inputMetadata struct {
+	Film  *bool
+	Year  *string
+	Title *string
 }
 
 type args struct {
@@ -28,8 +34,8 @@ type args struct {
 	Year       string `long:"year" description:"release year override"`
 	Title      string `long:"title" description:"release title override"`
 	Positional struct {
-		Regex    string `positional-arg-name:"regex" required:"true"`
-		Filename string `positional-arg-name:"filename" required:"true"`
+		Regex    string   `positional-arg-name:"regex" required:"true"`
+		Filename []string `positional-arg-name:"filename" required:"true"`
 	} `positional-args:"true"`
 }
 
@@ -45,14 +51,32 @@ func main() {
 		}
 	}
 
+	inmet := inputMetadata{
+		Film:  &args.Film,
+		Year:  &args.Year,
+		Title: &args.Title,
+	}
+
 	re, err := regexp.Compile(args.Positional.Regex)
 	if err != nil {
 		log.Fatalf("Failed to parse regex: %v\n", err)
 	}
 
-	fpath := path.Dir(args.Positional.Filename)
-	fext := path.Ext(args.Positional.Filename)
-	fnext := strings.TrimSuffix(args.Positional.Filename, fext)
+	for _, filename := range args.Positional.Filename {
+		newfilename := getFilename(filename, re, &inmet)
+		if !args.Silent {
+			printRename(&filename, &newfilename)
+		}
+		if !args.Dryrun {
+			renameFile(&filename, &newfilename)
+		}
+	}
+}
+
+func getFilename(filepath string, re *regexp.Regexp, inputmetadata *inputMetadata) string {
+	fpath := path.Dir(filepath)
+	fext := path.Ext(filepath)
+	fnext := strings.TrimSuffix(filepath, fext)
 
 	metadata := make(map[string]string)
 	match := re.FindStringSubmatch(fnext)
@@ -62,44 +86,47 @@ func main() {
 		}
 	}
 
-	r := Release{
+	r := release{
 		Title:        strings.ReplaceAll(metadata["title"], ".", " "),
 		Year:         metadata["year"],
 		Episode:      metadata["ep"],
-		EpisodeTitle: strings.ReplaceAll(metadata["eptitle"], ".", " "),
-		Scene:        strings.ReplaceAll(metadata["scene"], ".", " "),
+		EpisodeTitle: strings.TrimSpace(strings.ReplaceAll(metadata["eptitle"], ".", " ")),
+		Scene:        strings.TrimSpace(strings.ReplaceAll(metadata["scene"], ".", " ")),
 	}
-	if r.Year == "" && args.Year != "" {
-		r.Year = args.Year
+	if r.Year == "" && *inputmetadata.Year != "" {
+		r.Year = *inputmetadata.Year
 	}
-	if r.Title == "" && args.Title != "" {
-		r.Title = args.Title
+	if r.Title == "" && *inputmetadata.Title != "" {
+		r.Title = *inputmetadata.Title
 	}
 
-	newname := fmt.Sprintf("%s (%s)", r.Title, r.Year)
-	if !args.Film {
-		newname = fmt.Sprintf("%s - %s", newname, r.Episode)
+	var newname string
+	if !*inputmetadata.Film {
+		newname = fmt.Sprintf("%s - %s", r.Title, r.Episode)
 		if r.EpisodeTitle != "" {
 			newname = fmt.Sprintf("%s - %s", newname, r.EpisodeTitle)
 		}
+	} else {
+		newname = fmt.Sprintf("%s (%s)", r.Title, r.Year)
 	}
 	if r.Scene != "" {
 		newname = fmt.Sprintf("%s (%s)", newname, r.Scene)
 	}
-	newname = fmt.Sprintf("%s/%s%s", fpath, newname, fext)
 
-	if !args.Silent {
-		green := color.New(color.FgGreen).SprintFunc()
-		fmt.Printf("%s %s %s\n", args.Positional.Filename, green("->"), newname)
+	return fmt.Sprintf("%s/%s%s", fpath, newname, fext)
+}
+
+func printRename(filepath, newfilepath *string) {
+	green := color.New(color.FgGreen).SprintFunc()
+	fmt.Printf("%s %s %s\n", path.Base(*filepath), green("->"), path.Base(*newfilepath))
+}
+
+func renameFile(filepath, newfilepath *string) {
+	if strings.TrimSpace(*newfilepath) == "" {
+		log.Fatalln("Not renaming to empty string")
 	}
-
-	if !args.Dryrun {
-		if strings.TrimSpace(newname) == "" {
-			log.Fatalln("Not renaming to empty string")
-		}
-		err = os.Rename(args.Positional.Filename, newname)
-		if err != nil {
-			log.Fatalf("Failed to rename: %v\n", err)
-		}
+	err := os.Rename(*filepath, *newfilepath)
+	if err != nil {
+		log.Fatalf("Failed to rename: %v\n", err)
 	}
 }
