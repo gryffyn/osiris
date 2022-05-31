@@ -21,7 +21,7 @@ steps:
       note: CHANGELOG.md
       api_key:
         from_secret: gitea_token
-      base_url: https://git.neveris.one
+      base_url: https://git.gryffyn.io
       files: osiris
       checksum:
         - sha256
