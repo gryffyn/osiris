@@ -1,9 +1,9 @@
-# osiris
+# Osiris
 
 [![Build Status](https://ci.gryffyn.io/api/badges/gryffyn/osiris/status.svg?ref=refs/heads/main)](https://ci.gryffyn.io/gryffyn/osiris)  
-A tool for renaming films / tv series based on named regex capture groups.
+A tool for renaming films / tv series based on named regex capture groups and Go templates.
 
-## installation
+## Installation
 
 `go install git.gryffyn.io/gryffyn/osiris@latest`
 
@@ -15,7 +15,7 @@ cd osiris
 go build
 ```
 
-## usage
+## Usage
 ```
 Usage:
   osiris [OPTIONS] [regex] [filename...]
@@ -29,34 +29,48 @@ Application Options:
   -S, --scene       whether scene info is output
   -y, --year=       release year override
   -t, --title=      release title override
+  -c, --config=     config file (default ~/.config/osiris/osiris.yml)
 
 Help Options:
   -h, --help        Show this help message
 ```
 
-## regex parameters
+## Input Regex
 
 the regex argument takes in a regex with specifically-named named capture groups.
 
-| name    | example               | required | series | film | description                 |
-|---------|-----------------------|:--------:|--------|------|-----------------------------|
-| title   | `(?P<title>\w+)`      |   ✅    |    ✅    |   ✅   | title of the series/film    |
-| year    | `(?P<year>\d{4})`     |    ❌    |    ✅    |   ✅   | release year                |
-| ep      | `(?P<ep>S\d{2}E\d{2})` |   ✅    |   ✅     |    ❌  | episode number (ex. S01E01) |
-| eptitle | `(?P<eptitle>\w+)`    |    ❌    |    ✅    |    ❌  | episode title               |
-| scene   | `(?P<scene>[\w-\.]+)`  |    ❌    |    ✅    |   ✅   | scene / release info        |
+| name    | Output Template Name | example                | required | series | film | description                 |
+|---------|----------------------|------------------------|:--------:|--------|------|-----------------------------|
+| title   | Title                | `(?P<title>\w+)`       |    ✅     | ✅      | ✅    | title of the series/film    |
+| year    | Year                 | `(?P<year>\d{4})`      |    ❌     | ✅      | ✅    | release year                |
+| ep      | Episode              | `(?P<ep>S\d{2}E\d{2})` |    ✅     | ✅      | ❌    | episode number (ex. S01E01) |
+| eptitle | EpisodeTitle         | `(?P<eptitle>\w+)`     |    ❌     | ✅      | ❌    | episode title               |
+| scene   | Scene                | `(?P<scene>[\w-\.]+)`  |    ❌     | ✅      | ✅    | scene / release info        |
 
-## output naming format
+## Output Templates
 
-odin follows a standard-ish format, namely
+### Default
 
-`Series Title - S01E01 - Episode Title.ext`
+| Type   | Template                                                                                                                                                               | Example                                   |
+|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
+| Series | {{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}} | Series Title - S01E01 - Episode Title.ext |
+| Film   | {{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}                                                                                                 | Film Title (YEAR).ext                     |
 
-or in the case of a film (`-f, --film`)
 
-`Film Title (YEAR).ext`
+## Config File Example
 
-## example
+The configuration file is by default loaded from a file named `osiris.yml` the current user's configuration directory (`~/.config/osiris` on Linux). The config file location can be overridden with the `-c` flag.
+
+```yaml
+---
+seriesYear: false
+scene: false
+templates:
+    series: "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
+    film: "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
+```
+
+## Usage Example
 
 ```shell
 $ osiris -d '(?P<title>\w+)\.(?P<ep>S\d{2}E\d{2})\.(?P<eptitle>[\w\.]+)\.(?P<scene>WEB-.+)' Title.S01E01.Episode.Title.WEB-DL.H264.SCENE.mkv

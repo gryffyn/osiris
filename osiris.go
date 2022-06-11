@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -37,6 +38,7 @@ type args struct {
 	Scene      bool   `short:"S" long:"scene" description:"whether scene info is output"`
 	Year       string `short:"y" long:"year" description:"release year override"`
 	Title      string `short:"t" long:"title" description:"release title override"`
+	ConfigFile string `short:"c" long:"config" description:"config file (default ~/.config/osiris/osiris.yml"`
 	Positional struct {
 		Regex    string   `positional-arg-name:"regex" required:"true"`
 		Filename []string `positional-arg-name:"filename" required:"true"`
@@ -61,13 +63,37 @@ func main() {
 		}
 	}
 
+	var data []byte
+	var cfgFile string
+	if args.ConfigFile != "" {
+		cfgFile = args.ConfigFile
+	} else {
+		cfgdir, err := os.UserConfigDir()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		cfgFile = path.Join(cfgdir, "osiris", "osiris.yml")
+	}
+
+	data, err = ioutil.ReadFile(cfgFile)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	cfg := config{}
+	err = cfg.Parse(data)
+	if err != nil {
+		log.Fatalf("Error reading config file (%s): %v", cfgFile, err)
+	}
+	cfg.Argparse(&args)
+
 	re, err := regexp.Compile(args.Positional.Regex)
 	if err != nil {
 		log.Fatalf("Failed to parse regex: %v\n", err)
 	}
 
 	for _, filename := range args.Positional.Filename {
-		newfilename := getFilename(filename, re, &args)
+		newfilename := getFilename(filename, re, &cfg, args.Year, args.Title, args.Film)
 		if !args.Silent {
 			printRename(&filename, &newfilename)
 		}
@@ -77,7 +103,7 @@ func main() {
 	}
 }
 
-func getFilename(filepath string, re *regexp.Regexp, args *args) string {
+func getFilename(filepath string, re *regexp.Regexp, cfg *config, year, title string, film bool) string {
 	fpath := path.Dir(filepath)
 	fext := path.Ext(filepath)
 	fnext := strings.TrimSuffix(filepath, fext)
@@ -101,26 +127,32 @@ func getFilename(filepath string, re *regexp.Regexp, args *args) string {
 		EpisodeTitle: strings.TrimSpace(strings.ReplaceAll(metadata["eptitle"], ".", " ")),
 		Scene:        strings.TrimSpace(scene),
 		Options: releaseOptions{
-			Scene:      args.Scene,
-			SeriesYear: args.SeriesYear,
+			Scene:      *cfg.Scene,
+			SeriesYear: *cfg.SeriesYear,
 		},
 	}
-	if r.Year == "" && args.Year != "" {
-		r.Year = args.Year
+	if r.Year == "" && year != "" {
+		r.Year = year
 	}
-	if r.Title == "" && args.Title != "" {
-		r.Title = args.Title
+	if r.Title == "" && title != "" {
+		r.Title = title
 	}
 
-	var tmpl *string
+	var tmpl string
 
-	if args.Film {
-		tmpl = &filmTemplate
+	if film {
+		if *cfg.Templates.Film != "" {
+			tmpl = *cfg.Templates.Film
+		}
+		tmpl = filmTemplate
 	} else {
-		tmpl = &seriesTemplate
+		if *cfg.Templates.Series != "" {
+			tmpl = *cfg.Templates.Series
+		}
+		tmpl = seriesTemplate
 	}
 
-	releaseTemplate, _ := template.New("release").Parse(*tmpl)
+	releaseTemplate, _ := template.New("release").Parse(tmpl)
 	var newname bytes.Buffer
 	err := releaseTemplate.Execute(&newname, r)
 	if err != nil {
