@@ -39,8 +39,8 @@ type args struct {
 	Year       string `short:"y" long:"year" description:"release year override"`
 	Title      string `short:"t" long:"title" description:"release title override"`
 	ConfigFile string `short:"c" long:"config" description:"config file (default ~/.config/osiris/osiris.yml"`
+	Regex      string `short:"r" long:"regex" description:"input regex pattern"`
 	Positional struct {
-		Regex    string   `positional-arg-name:"regex" required:"true"`
 		Filename []string `positional-arg-name:"filename" required:"true"`
 	} `positional-args:"true"`
 }
@@ -87,7 +87,19 @@ func main() {
 	}
 	cfg.Argparse(&args)
 
-	re, err := regexp.Compile(args.Positional.Regex)
+	var re *regexp.Regexp
+	if args.Film {
+		if cfg.Regex.Film == nil || *cfg.Regex.Film == "" {
+			log.Fatalln("Regex must be provided by `-r` flag or in osiris.yml")
+		}
+		re, err = regexp.Compile(*cfg.Regex.Film)
+	} else {
+		if cfg.Regex.Series == nil || *cfg.Regex.Series == "" {
+			log.Fatalln("Regex must be provided by `-r` flag or in osiris.yml")
+		}
+		re, err = regexp.Compile(*cfg.Regex.Series)
+	}
+
 	if err != nil {
 		log.Fatalf("Failed to parse regex: %v\n", err)
 	}
