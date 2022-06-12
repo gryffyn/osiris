@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2022.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package main
 
 import (
@@ -39,8 +63,8 @@ type args struct {
 	Year       string `short:"y" long:"year" description:"release year override"`
 	Title      string `short:"t" long:"title" description:"release title override"`
 	ConfigFile string `short:"c" long:"config" description:"config file (default ~/.config/osiris/osiris.yml"`
+	Regex      string `short:"r" long:"regex" description:"input regex pattern"`
 	Positional struct {
-		Regex    string   `positional-arg-name:"regex" required:"true"`
 		Filename []string `positional-arg-name:"filename" required:"true"`
 	} `positional-args:"true"`
 }
@@ -87,7 +111,19 @@ func main() {
 	}
 	cfg.Argparse(&args)
 
-	re, err := regexp.Compile(args.Positional.Regex)
+	var re *regexp.Regexp
+	if args.Film {
+		if cfg.Regex.Film == nil || *cfg.Regex.Film == "" {
+			log.Fatalln("Regex must be provided by `-r` flag or in osiris.yml")
+		}
+		re, err = regexp.Compile(*cfg.Regex.Film)
+	} else {
+		if cfg.Regex.Series == nil || *cfg.Regex.Series == "" {
+			log.Fatalln("Regex must be provided by `-r` flag or in osiris.yml")
+		}
+		re, err = regexp.Compile(*cfg.Regex.Series)
+	}
+
 	if err != nil {
 		log.Fatalf("Failed to parse regex: %v\n", err)
 	}
