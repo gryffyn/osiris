@@ -12,8 +12,9 @@ type config struct {
 		Film   *string `yaml:"film,omitempty"`
 	} `yaml:"templates,omitempty"`
 	Regex struct {
-		Series *string `yaml:"series,omitempty"`
-		Film   *string `yaml:"film,omitempty"`
+		Series *string   `yaml:"series,omitempty"`
+		Film   *string   `yaml:"film,omitempty"`
+		Custom []*string `yaml:"custom,omitempty"`
 	} `yaml:"regex,omitempty"`
 }
 

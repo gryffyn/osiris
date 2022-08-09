@@ -212,3 +212,13 @@ func renameFile(filepath, newfilepath *string) {
 		log.Fatalf("Failed to rename: %v\n", err)
 	}
 }
+
+func getCustomPreset(cfg *config, preset *string) (*string, error) {
+	for _, v := range cfg.Regex.Custom {
+		if *v == *preset {
+			return v, nil
+		}
+	}
+
+	return nil, fmt.Errorf("preset '%s' does not exist", *preset)
+}
