@@ -159,7 +159,7 @@ func getFilename(filepath string, re *regexp.Regexp, cfg *config, year, title st
 	r := release{
 		Title:        strings.TrimSpace(strings.ReplaceAll(metadata["title"], ".", " ")),
 		Year:         strings.TrimSpace(metadata["year"]),
-		Episode:      strings.TrimSpace(metadata["ep"]),
+		Episode:      strings.TrimSpace(strings.ToUpper(metadata["ep"])),
 		EpisodeTitle: strings.TrimSpace(strings.ReplaceAll(metadata["eptitle"], ".", " ")),
 		Scene:        strings.TrimSpace(scene),
 		Options: releaseOptions{
