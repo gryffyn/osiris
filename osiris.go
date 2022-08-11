@@ -62,8 +62,9 @@ type args struct {
 	Scene      bool   `short:"S" long:"scene" description:"whether scene info is output"`
 	Year       string `short:"y" long:"year" description:"release year override"`
 	Title      string `short:"t" long:"title" description:"release title override"`
-	ConfigFile string `short:"c" long:"config" description:"config file (default ~/.config/osiris/osiris.yml"`
+	ConfigFile string `short:"c" long:"config" description:"config file (default ~/.config/osiris/osiris.yml)"`
 	Regex      string `short:"r" long:"regex" description:"input regex pattern"`
+	Preset     string `short:"p" long:"preset" description:"preset input regex"`
 	Positional struct {
 		Filename []string `positional-arg-name:"filename" required:"true"`
 	} `positional-args:"true"`
@@ -112,16 +113,26 @@ func main() {
 	cfg.Argparse(&args)
 
 	var re *regexp.Regexp
-	if args.Film {
-		if cfg.Regex.Film == nil || *cfg.Regex.Film == "" {
-			log.Fatalln("Regex must be provided by `-r` flag or in osiris.yml")
+
+	if args.Preset != "" {
+		pre, err := getCustomPreset(&cfg, &args.Preset)
+		if err != nil {
+			log.Fatalln(err)
 		}
-		re, err = regexp.Compile(*cfg.Regex.Film)
+		re = regexp.MustCompile(*pre)
 	} else {
-		if cfg.Regex.Series == nil || *cfg.Regex.Series == "" {
-			log.Fatalln("Regex must be provided by `-r` flag or in osiris.yml")
+		if args.Film {
+			if cfg.Regex.Film == nil || *cfg.Regex.Film == "" {
+				log.Fatalln("Regex must be provided by `-r` flag or in osiris.yml")
+			}
+			re, err = regexp.Compile(*cfg.Regex.Film)
+		} else {
+			if cfg.Regex.Series == nil || *cfg.Regex.Series == "" {
+				log.Fatalln("Regex must be provided by `-r` flag or in osiris.yml")
+			}
+			re, err = regexp.Compile(*cfg.Regex.Series)
 		}
-		re, err = regexp.Compile(*cfg.Regex.Series)
+
 	}
 
 	if err != nil {
@@ -214,8 +225,8 @@ func renameFile(filepath, newfilepath *string) {
 }
 
 func getCustomPreset(cfg *config, preset *string) (*string, error) {
-	for _, v := range cfg.Regex.Custom {
-		if *v == *preset {
+	for k, v := range cfg.Regex.Custom {
+		if *k == *preset {
 			return v, nil
 		}
 	}

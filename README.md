@@ -18,7 +18,7 @@ go build
 ## Usage
 ```
 Usage:
-  osiris [OPTIONS] [regex] [filename...]
+  osiris [OPTIONS] [filename...]
 
 Application Options:
   -d, --dryrun      don't modify files
@@ -30,6 +30,8 @@ Application Options:
   -y, --year=       release year override
   -t, --title=      release title override
   -c, --config=     config file (default ~/.config/osiris/osiris.yml)
+  -r, --regex=      input regex pattern
+  -p, --preset=     preset input regex
 
 Help Options:
   -h, --help        Show this help message
@@ -63,11 +65,16 @@ The configuration file is by default loaded from a file named `osiris.yml` the c
 
 ```yaml
 ---
-seriesYear: false
-scene: false
+seriesYear: true
+scene: true
 templates:
-    series: "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
-    film: "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
+  series: "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
+  film: "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
+regex:
+  series: '(?P<title>[\w\.]+)\.(?P<ep>S\d{2}E\d{2})\.(?P<eptitle>[\w\.-]+)(?P<scene>1080p.+)'
+  film:
+  custom:
+    yify: '(?P<title>[\w\.]+)\.(?P<year>\d{4})\.(?P<scene>(?:2160|1080|720)p[\w\.]+YIFY)'
 ```
 
 ## Usage Example
