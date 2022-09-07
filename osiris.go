@@ -26,8 +26,8 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -80,7 +80,8 @@ func main() {
 	var args args
 	_, err := flags.Parse(&args)
 
-	if e, ok := err.(*flags.Error); ok {
+	var e *flags.Error
+	if ok := errors.Is(err, e); ok {
 		if e.Type == flags.ErrHelp {
 			os.Exit(0)
 		} else {
@@ -89,18 +90,15 @@ func main() {
 	}
 
 	var data []byte
-	var cfgFile string
+	cfgFile, err := ConfigFile()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	if args.ConfigFile != "" {
 		cfgFile = args.ConfigFile
-	} else {
-		cfgdir, err := os.UserConfigDir()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		cfgFile = path.Join(cfgdir, "osiris", "osiris.yml")
 	}
 
-	data, err = ioutil.ReadFile(cfgFile)
+	data, err = os.ReadFile(cfgFile)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -132,7 +130,6 @@ func main() {
 			}
 			re, err = regexp.Compile(*cfg.Regex.Series)
 		}
-
 	}
 
 	if err != nil {
@@ -142,10 +139,10 @@ func main() {
 	for _, filename := range args.Positional.Filename {
 		newfilename := getFilename(filename, re, &cfg, args.Year, args.Title, args.Film)
 		if !args.Silent {
-			printRename(&filename, &newfilename)
+			printRename(&filename, &newfilename) //nolint:gosec
 		}
 		if !args.Dryrun {
-			renameFile(&filename, &newfilename)
+			renameFile(&filename, &newfilename) //nolint:gosec
 		}
 	}
 }
@@ -190,13 +187,15 @@ func getFilename(filepath string, re *regexp.Regexp, cfg *config, year, title st
 	if film {
 		if *cfg.Templates.Film != "" {
 			tmpl = *cfg.Templates.Film
+		} else {
+			tmpl = filmTemplate
 		}
-		tmpl = filmTemplate
 	} else {
 		if *cfg.Templates.Series != "" {
 			tmpl = *cfg.Templates.Series
+		} else {
+			tmpl = seriesTemplate
 		}
-		tmpl = seriesTemplate
 	}
 
 	releaseTemplate, _ := template.New("release").Parse(tmpl)
@@ -232,4 +231,9 @@ func getCustomPreset(cfg *config, preset *string) (*string, error) {
 	}
 
 	return nil, fmt.Errorf("preset '%s' does not exist", *preset)
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return !errors.Is(err, os.ErrNotExist)
 }

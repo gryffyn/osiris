@@ -61,7 +61,7 @@ the regex argument takes in a regex with specifically-named named capture groups
 
 ## Config File Example
 
-The configuration file is by default loaded from a file named `osiris.yml` the current user's configuration directory (`~/.config/osiris` on Linux). The config file location can be overridden with the `-c` flag.
+The configuration file is by default loaded from a file named `osiris.yml` (or `osiris.yaml`, or `osiris.toml`) in the current user's configuration directory (`~/.config/osiris` on Linux). The config file location can be overridden with the `-c` flag.
 
 ```yaml
 ---
@@ -75,6 +75,21 @@ regex:
   film:
   custom:
     yify: '(?P<title>[\w\.]+)\.(?P<year>\d{4})\.(?P<scene>(?:2160|1080|720)p[\w\.]+YIFY)'
+```
+
+```toml
+SeriesYear = true
+Scene = true
+
+[Templates]
+Series = "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
+Film = "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
+
+[Regex]
+Series = '(?P<title>[\w\.]+)\.(?P<ep>S\d{2}E\d{2})\.(?P<eptitle>[\w\.-]+)(?P<scene>1080p.+)'
+
+[Regex.Custom]
+yify = '(?P<title>[\w\.]+)\.(?P<year>\d{4})\.(?P<scene>(?:2160|1080|720)p[\w\.]+YIFY)'
 ```
 
 ## Usage Example
