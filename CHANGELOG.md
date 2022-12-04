@@ -1,3 +1,10 @@
+## [1.1.0] - 2022-12-04
+### BREAKING
+- Configuration changed: custom regexes are now divided into films and series. See examples in `contrib/`.
+
+### Added
+- Added separate series and film custom regexes.
+
 ## [1.0.0] - 2022-09-07
 ### Added
 - Added TOML config
