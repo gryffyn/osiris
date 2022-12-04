@@ -1,0 +1,16 @@
+---
+seriesYear: true
+scene: true
+templates:
+  series: "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
+  film: "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
+regex:
+  series: '(?P<title>[\w\.]+)\.(?P<ep>S\d{2}E\d{2})\.(?P<eptitle>[\w\.-]+)(?P<scene>1080p.+)'
+  film: '(?P<title>[\w\.]+)\.(?P<year>\d{4})\.(?P<scene>(?:2160|1080|720)p[\w\.-]+(?:[\w\.]))'
+  custom:
+    film:
+      # rarbg and yify
+      generic: '(?P<title>[\w\.]+)\.(?P<year>\d{4})\.(?P<scene>(?:2160|1080|720)p[\w\.-]+(?:[\w\.]))'
+    series:
+      # rarbg, yify, publichd
+      generic: '(?P<title>[\w\.]+)\.(?P<ep>S\d{2}E\d{2})\.(?P<scene>(?:2160|1080|720)p[\w\.-]+(?:[\w\.]]))'

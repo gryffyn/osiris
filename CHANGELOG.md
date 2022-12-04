@@ -1,3 +1,10 @@
+## [1.0.0] - 2022-09-07
+### Added
+- Added TOML config
+
+### Fixed
+- Better error handling
+
 ## [0.4.0] - 2022-08-10
 ### Added
 - Added custom presets

@@ -59,38 +59,14 @@ the regex argument takes in a regex with specifically-named named capture groups
 | Film   | {{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}                                                                                                 | Film Title (YEAR).ext                     |
 
 
-## Config File Example
+## Config File
 
 The configuration file is by default loaded from a file named `osiris.yml` (or `osiris.yaml`, or `osiris.toml`) in the current user's configuration directory (`~/.config/osiris` on Linux). The config file location can be overridden with the `-c` flag.
 
-```yaml
----
-seriesYear: true
-scene: true
-templates:
-  series: "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
-  film: "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
-regex:
-  series: '(?P<title>[\w\.]+)\.(?P<ep>S\d{2}E\d{2})\.(?P<eptitle>[\w\.-]+)(?P<scene>1080p.+)'
-  film:
-  custom:
-    yify: '(?P<title>[\w\.]+)\.(?P<year>\d{4})\.(?P<scene>(?:2160|1080|720)p[\w\.]+YIFY)'
-```
 
-```toml
-SeriesYear = true
-Scene = true
+### Example
 
-[Templates]
-Series = "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
-Film = "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
-
-[Regex]
-Series = '(?P<title>[\w\.]+)\.(?P<ep>S\d{2}E\d{2})\.(?P<eptitle>[\w\.-]+)(?P<scene>1080p.+)'
-
-[Regex.Custom]
-yify = '(?P<title>[\w\.]+)\.(?P<year>\d{4})\.(?P<scene>(?:2160|1080|720)p[\w\.]+YIFY)'
-```
+See [contrib/osiris.example.yml](./contrib/osiris.example.yml) or [contrib/osiris.example.toml](./contrib/osiris.example.toml). Copy one of them to the configuration directory and modify as needed.
 
 ## Usage Example
 

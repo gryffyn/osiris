@@ -113,7 +113,7 @@ func main() {
 	var re *regexp.Regexp
 
 	if args.Preset != "" {
-		pre, err := getCustomPreset(&cfg, &args.Preset)
+		pre, err := getCustomPreset(&cfg, &args.Preset, args.Film)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -223,10 +223,19 @@ func renameFile(filepath, newfilepath *string) {
 	}
 }
 
-func getCustomPreset(cfg *config, preset *string) (*string, error) {
-	for k, v := range cfg.Regex.Custom {
-		if *k == *preset {
-			return v, nil
+func getCustomPreset(cfg *config, preset *string, film bool) (*string, error) {
+	switch film {
+	case true:
+		for k, v := range cfg.Regex.Custom.Film {
+			if *k == *preset {
+				return v, nil
+			}
+		}
+	case false:
+		for k, v := range cfg.Regex.Custom.Series {
+			if *k == *preset {
+				return v, nil
+			}
 		}
 	}
 

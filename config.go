@@ -42,16 +42,19 @@ type config struct {
 		Film   *string `yaml:"film,omitempty"`
 	} `yaml:"templates,omitempty"`
 	Regex struct {
-		Series *string             `yaml:"series,omitempty"`
-		Film   *string             `yaml:"film,omitempty"`
-		Custom map[*string]*string `yaml:"custom,omitempty"`
+		Series *string `yaml:"series,omitempty"`
+		Film   *string `yaml:"film,omitempty"`
+		Custom struct {
+			Series map[*string]*string `yaml:"series,omitempty"`
+			Film   map[*string]*string `yaml:"film,omitempty"`
+		} `yaml:"custom,omitempty"`
 	} `yaml:"regex,omitempty"`
 }
 
 func (c *config) Parse(data []byte) error {
-	err := toml.Unmarshal(data, c)
+	err := yaml.Unmarshal(data, c)
 	if err != nil {
-		return yaml.Unmarshal(data, c)
+		return toml.Unmarshal(data, c)
 	}
 	return err
 }
