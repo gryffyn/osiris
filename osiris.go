@@ -71,9 +71,8 @@ type args struct {
 }
 
 var (
-    seriesTemplate = "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if ." +
-        "EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
-    filmTemplate = "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
+    seriesTemplate = "{{ .Title }}{{if .Options.SeriesYear}} ({{ .Year }}){{end}} - {{ .Episode}}{{if .EpisodeTitle}} - {{ .EpisodeTitle}}{{end}}{{if .Options.Scene }} ({{ .Scene }}){{end}}"
+    filmTemplate   = "{{ .Title }} ({{ .Year }}){{if .Options.Scene }} ({{ .Scene }}){{end}}"
 )
 
 func main() {
@@ -164,7 +163,7 @@ func getFilename(filepath string, re *regexp.Regexp, cfg *config, year, title st
         return strings.ReplaceAll(s, ".", " ")
     })
 
-    r := release{
+    r := &release{
         Title:        strings.TrimSpace(strings.ReplaceAll(metadata["title"], ".", " ")),
         Year:         strings.TrimSpace(metadata["year"]),
         Episode:      strings.TrimSpace(strings.ToUpper(metadata["ep"])),
@@ -198,9 +197,12 @@ func getFilename(filepath string, re *regexp.Regexp, cfg *config, year, title st
         }
     }
 
-    releaseTemplate, _ := template.New("release").Parse(tmpl)
+    releaseTemplate, err := template.New("release").Parse(tmpl)
+    if err != nil {
+        log.Fatalln(err)
+    }
     var newname bytes.Buffer
-    err := releaseTemplate.Execute(&newname, &r)
+    err = releaseTemplate.Execute(&newname, &r)
     if err != nil {
         log.Fatalln(err)
     }
